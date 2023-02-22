@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const accountModel = require("../models/account");
 const { responseJson } = require("../utils/response");
 
 const authentication = async function (req, res, next) {
@@ -12,11 +11,7 @@ const authentication = async function (req, res, next) {
                 msg: "Invalid token!",
             });
         } else {
-            console.log("\x1b[31m%s\x1b[0m", 123);
-
-            // const account = await accountModel.findOne({_id:payload.id})
-            // req.account = account
-            // next()
+            next()
         }
     });
 };

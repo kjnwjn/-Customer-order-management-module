@@ -28,7 +28,7 @@ module.exports = {
                             {
                                 payload,
                             },
-                            process.env.JWT_SECRET,
+                            process.env.SECRET_KEY,
                             {
                                 expiresIn: "1h",
                             }
