@@ -1,3 +1,4 @@
+// const database_uri = "mongodb://127.0.0.1:27017/SOA_Midterm";
 const database_uri = process.env.DB_URL;
 const mongoose = require("mongoose");
 const accountModel = require("../models/account");
@@ -26,6 +27,7 @@ const connect = async function () {
         (error) => {
             console.log("\x1b[31m%s\x1b[0m", "Failed to connect to MongoDB!");
             console.log("\x1b[31m%s\x1b[0m", error.message);
+            console.log(error);
         }
     );
 };

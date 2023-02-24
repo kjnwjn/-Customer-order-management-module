@@ -24,6 +24,10 @@ const accountSchema = new mongoose.Schema(
             type: String,
             default: "STAFF",
         },
+        status: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,

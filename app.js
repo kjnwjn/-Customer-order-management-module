@@ -48,10 +48,10 @@ app.use(function (err, req, res, next) {
     res.locals.message = err.message;
     res.locals.error = req.app.get("env") === "development" ? err : {};
 
-    responseJson({
+    return responseJson({
         status: false,
         statusCode: err.status || 500,
-        msg: err.message,
+        msg: { en: err.message, vn: err.message },
         data: {},
         res,
     });

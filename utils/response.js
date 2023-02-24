@@ -1,4 +1,4 @@
-const responseJson = function ({ status = false, statusCode = 200, msg = "", data = {}, res }) {
+const responseJson = function ({ status = false, statusCode = 200, msg = {}, data = {}, res }) {
     res.status(statusCode).json({
         status: status,
         statusCode: statusCode,
