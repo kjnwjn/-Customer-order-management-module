@@ -3,7 +3,11 @@ const authentication = require("../middleware/authentication");
 
 const { login, logout } = require("./modules/account");
 
-Router.post("/login", login);
-Router.post("/logout", authentication, logout);
+/**
+ * Account ================================================================
+ */
+
+Router.post("/account/login", login);
+Router.get("/account/logout", authentication, logout);
 
 module.exports = Router;

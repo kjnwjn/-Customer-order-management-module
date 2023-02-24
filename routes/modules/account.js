@@ -23,26 +23,42 @@ module.exports = {
                 : undefined;
             let accountQuery = await accountModel.findOne({ userCode });
             if (accountQuery) {
+                console.log(accountQuery);
                 bcrypt.compare(password, accountQuery.password, async (err, isValid) => {
                     if (isValid) {
-                        const { password, ...payload } = accountQuery;
                         let token = jwt.sign(
                             {
-                                payload,
+                                userCode: accountQuery.userCode,
+                                fullName: accountQuery.fullName,
+                                role: accountQuery.role,
+                                status: accountQuery.status,
                             },
-                            process.env.SECRET_KEY,
+                            process.env.ACCESS_TOKEN_SECRET_KEY,
                             {
                                 expiresIn: "1h",
                             }
                         );
-                        await accountModel.findOneAndUpdate({ userCode }, { access_token: token, status: true });
+                        let refreshToken = jwt.sign(
+                            {
+                                userCode: accountQuery.userCode,
+                                fullName: accountQuery.fullName,
+                                role: accountQuery.role,
+                                status: accountQuery.status,
+                            },
+                            process.env.ACCESS_TOKEN_SECRET_KEY,
+                            {
+                                expiresIn: "30 days",
+                            }
+                        );
+                        await accountModel.findOneAndUpdate({ userCode }, { access_token: token, refresh_token: refreshToken, status: true });
                         responseJson({
                             res,
                             status: true,
                             statusCode: 200,
                             msg: { en: "Login successfully!", vn: "Đăng nhập thành công." },
                             data: {
-                                payload,
+                                token,
+                                refreshToken,
                             },
                         });
                     } else {
@@ -60,7 +76,6 @@ module.exports = {
                 });
             }
         } catch (error) {
-            console.log(error);
             responseJson({
                 res,
                 statusCode: 500,
@@ -70,9 +85,26 @@ module.exports = {
     },
     logout: async (req, res, next) => {
         // #swagger.tags = ['Account']
-        responseJson({
-            res,
-            msg: { en: "password is required" },
-        });
+        // #swagger.description = 'This endpoint provides method for logout in system. Then receive an access token.'
+        try {
+            const token = req.headers["x-access-token"] || req.query.token || req.cookies.token || null;
+            jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY, async (error, payload) => {
+                await accountModel.findOneAndUpdate({ userCode: payload.userCode }, { access_token: "#N/A", refresh_token: "#N/A", status: false });
+                return responseJson({
+                    res,
+                    status: true,
+                    msg: {
+                        en: "Logout successfully",
+                        vn: "Đăng xuất thành công",
+                    },
+                });
+            });
+        } catch (e) {
+            responseJson({
+                res,
+                statusCode: 500,
+                msg: { en: error.message },
+            });
+        }
     },
 };

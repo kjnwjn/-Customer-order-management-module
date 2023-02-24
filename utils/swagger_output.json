@@ -11,7 +11,7 @@
     "http"
   ],
   "paths": {
-    "/login": {
+    "/account/login": {
       "post": {
         "tags": [
           "Account"
@@ -37,12 +37,12 @@
         "responses": {}
       }
     },
-    "/logout": {
-      "post": {
+    "/account/logout": {
+      "get": {
         "tags": [
           "Account"
         ],
-        "description": "",
+        "description": "This endpoint provides method for logout in system. Then receive an access token.",
         "parameters": [
           {
             "name": "x-access-token",
@@ -50,7 +50,22 @@
             "type": "string"
           },
           {
+            "name": "x-access-refreshToken",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "token",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "refreshToken",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "req",
             "in": "query",
             "type": "string"
           }

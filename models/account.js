@@ -20,6 +20,10 @@ const accountSchema = new mongoose.Schema(
             type: String,
             default: "#N/A",
         },
+        refresh_token: {
+            type: String,
+            default: "#N/A",
+        },
         role: {
             type: String,
             default: "STAFF",
