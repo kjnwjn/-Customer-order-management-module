@@ -6,7 +6,11 @@ const authorization = {
     admin: async (req, res, next) => {
         try {
             const token = req.query.token || req.headers["x-access-token"] || req.cookies.token || null;
+            console.log(token);
             jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY, async (error, payload) => {
+                console.log(payload);
+                console.log(error);
+
                 if (payload && payload.role.toUpperCase() == role.admin) {
                     return next();
                 } else {

@@ -1,5 +1,5 @@
 const { responseJson } = require("../../utils/response");
-const { roleConfigs } = require("../../configs/role");
+const roleConfigs = require("../../configs/role");
 const { generateRandomString } = require("../../utils/index");
 const accountModel = require("../../models/account");
 const bcrypt = require("bcrypt");
@@ -130,7 +130,9 @@ module.exports = {
                 },
             });
         }
-
+        console.log(roleConfigs);
+        const correctRoles = Object.values(roleConfigs);
+        console.log(correctRoles);
         if (!role) {
             responseJson({
                 res,
@@ -140,24 +142,29 @@ module.exports = {
                 },
             });
         }
-        const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
-        const newAccount = new accountModel({ userCode, password: hashPassword, fullName, role });
-        await newAccount.save();
-        responseJson({
-            res,
-            status: true,
-            msg: {
-                en: `Create an account for user "${fullName}" successfully!`,
-                vn: `Đã tạo tài khoản nhân viên thành công cho "${fullName}".`,
-            },
+        const a = correctRoles.filter((correctRole) => {
+            return correctRole == role;
         });
+        console.log(a);
+        res.end();
+        // const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+        // const newAccount = new accountModel({ userCode, password: hashPassword, fullName, role });
+        // await newAccount.save();
+        // responseJson({
+        //     res,
+        //     status: true,
+        //     msg: {
+        //         en: `Create an account for user "${fullName}" successfully!`,
+        //         vn: `Đã tạo tài khoản nhân viên thành công cho "${fullName}".`,
+        //     },
+        // });
     },
     getAllUsers: async (req, res, next) => {
         // #swagger.tags = ['Account']
         // #swagger.description = 'This endpoint provides method for logout in system. Then receive an access token.'
         try {
             let users = await accountModel.find({});
-            user
+            users
                 ? responseJson({
                       res,
                       status: true,
