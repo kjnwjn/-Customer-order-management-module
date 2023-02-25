@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="http://localhost:3300/socket.io/socket.io.js"></script>
+        <title>Document</title>
+    </head>
+    <body>
+        <h1>hello world</h1>
+        <h2 id="title"></h2>
+        <button id="myBtn">click me</button>
+        <script>
+            const socket = io();
+            // io.on("connect", () => {
+            //     console.log(); // x8WIv7-mJelg7on_ALbx
+            // });
+            document.getElementById("myBtn").addEventListener("click", displayData);
+            function displayData() {
+                // console.log(1234);
+                socket.emit("updated", "hello");
+                socket.on("randomData", (data) => {
+                    document.getElementById("title").innerHTML = data;
+                });
+            }
+            socket.on("response", (data) => {
+                document.getElementById("title").innerHTML = data;
+            });
+        </script>
+    </body>
+</html>

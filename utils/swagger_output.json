@@ -50,7 +50,28 @@
             "type": "string"
           },
           {
-            "name": "x-access-refreshToken",
+            "name": "token",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "req",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/account/newAccount": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-access-token",
             "in": "header",
             "type": "string"
           },
@@ -60,12 +81,63 @@
             "type": "string"
           },
           {
-            "name": "refreshToken",
-            "in": "query",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "fullName": {
+                  "example": "any"
+                },
+                "role": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/account/get-all-users": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "description": "This endpoint provides method for logout in system. Then receive an access token.",
+        "parameters": [
+          {
+            "name": "x-access-token",
+            "in": "header",
             "type": "string"
           },
           {
-            "name": "req",
+            "name": "token",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/token/generateToken": {
+      "get": {
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/token/getAccessToken": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-access-token",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "token",
             "in": "query",
             "type": "string"
           }

@@ -1,4 +1,5 @@
 const { responseJson } = require("../../utils/response");
+const { generateRandomString } = require("../../utils/index");
 const accountModel = require("../../models/account");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -23,7 +24,7 @@ module.exports = {
                 : undefined;
             let accountQuery = await accountModel.findOne({ userCode });
             if (accountQuery) {
-                console.log(accountQuery);
+                // console.log(accountQuery);
                 bcrypt.compare(password, accountQuery.password, async (err, isValid) => {
                     if (isValid) {
                         let token = jwt.sign(
@@ -35,7 +36,7 @@ module.exports = {
                             },
                             process.env.ACCESS_TOKEN_SECRET_KEY,
                             {
-                                expiresIn: "1h",
+                                expiresIn: "1m",
                             }
                         );
                         let refreshToken = jwt.sign(
@@ -45,11 +46,13 @@ module.exports = {
                                 role: accountQuery.role,
                                 status: accountQuery.status,
                             },
-                            process.env.ACCESS_TOKEN_SECRET_KEY,
+                            process.env.REFRESH_TOKEN_SECRET_KEY,
                             {
                                 expiresIn: "30 days",
                             }
                         );
+                        res.cookie("refreshToken", refreshToken);
+                        res.cookie("token", token);
                         await accountModel.findOneAndUpdate({ userCode }, { access_token: token, refresh_token: refreshToken, status: true });
                         responseJson({
                             res,
@@ -100,6 +103,61 @@ module.exports = {
                 });
             });
         } catch (e) {
+            responseJson({
+                res,
+                statusCode: 500,
+                msg: { en: error.message },
+            });
+        }
+    },
+    newAccount: async (req, res, next) => {
+        // #swagger.tags = ['Account']
+        let userCode = generateRandomString(6);
+        let password = generateRandomString(6);
+        let fullName = req.body.fullName ? req.body.fullName.toUpperCase() : null;
+        let role = req.body.role ? req.body.role.toUpperCase() : null;
+        do {
+            userCode = generateRandomString(6);
+        } while (await accountModel.findOne({ userCode }));
+
+        if (!fullName) {
+            responseJson({
+                res,
+                msg: {
+                    en: "fullName is require.",
+                    vn: "Họ và tên nhân viên là bắt buộc.",
+                },
+            });
+        }
+
+        if (!role) {
+            responseJson({
+                res,
+                msg: {
+                    en: "role is require.",
+                    vn: "Chức vụ nhân viên là bắt buộc.",
+                },
+            });
+        }
+        const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+        const newAccount = new accountModel({ userCode, password: hashPassword, fullName, role });
+        await newAccount.save();
+        responseJson({
+            res,
+            statusCode: true,
+            msg: {
+                en: `Create an account for user "${fullName}" successfully!`,
+                vn: `Đã tạo tài khoản nhân viên thành công cho "${fullName}".`,
+            },
+        });
+    },
+    getAllUsers: async (req, res, next) => {
+        // #swagger.tags = ['Account']
+        // #swagger.description = 'This endpoint provides method for logout in system. Then receive an access token.'
+        try {
+            let users = await accountModel.find({});
+            console.log(users);
+        } catch (error) {
             responseJson({
                 res,
                 statusCode: 500,
