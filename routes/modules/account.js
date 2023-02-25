@@ -1,4 +1,5 @@
 const { responseJson } = require("../../utils/response");
+const { roleConfigs } = require("../../configs/role");
 const { generateRandomString } = require("../../utils/index");
 const accountModel = require("../../models/account");
 const bcrypt = require("bcrypt");
@@ -144,7 +145,7 @@ module.exports = {
         await newAccount.save();
         responseJson({
             res,
-            statusCode: true,
+            status: true,
             msg: {
                 en: `Create an account for user "${fullName}" successfully!`,
                 vn: `Đã tạo tài khoản nhân viên thành công cho "${fullName}".`,
@@ -156,7 +157,19 @@ module.exports = {
         // #swagger.description = 'This endpoint provides method for logout in system. Then receive an access token.'
         try {
             let users = await accountModel.find({});
-            console.log(users);
+            user
+                ? responseJson({
+                      res,
+                      status: true,
+                      msg: { en: "Get list user successfully!", vn: "Lấy danh sách tài khoản thành công!" },
+                      data: {
+                          users,
+                      },
+                  })
+                : responseJson({
+                      res,
+                      msg: { en: "List user is empty!", vn: "Danh sách tài khoản rỗng!" },
+                  });
         } catch (error) {
             responseJson({
                 res,

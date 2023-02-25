@@ -8,35 +8,58 @@ const authentication = async function (req, res, next) {
         const refreshToken = req.cookies.refreshToken;
 
         jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY, async (error, payload) => {
-            if (error) {
+            // console.log(payload);
+            if (!payload) {
                 jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET_KEY, async (e, refreshPayload) => {
-                    const accountQuery = await accountModel.findOne({ userCode: refreshPayload.userCode });
-
-                    if (!e && refreshToken == accountQuery.refresh_token) {
-                        let newToken = jwt.sign(
-                            {
-                                userCode: accountQuery.userCode,
-                                fullName: accountQuery.fullName,
-                                role: accountQuery.role,
-                                status: accountQuery.status,
-                            },
-                            process.env.ACCESS_TOKEN_SECRET_KEY,
-                            {
-                                expiresIn: "1m",
-                            }
-                        );
-                        res.cookie("token", newToken);
-                        await accountModel.findOneAndUpdate({ userCode: refreshPayload.userCode }, { access_token: newToken });
-                        return next();
-                    } else {
+                    if (e) {
                         responseJson({
                             res,
                             statusCode: 401,
                             msg: {
-                                en: "Refresh token is invalid or has been expired, please login again.",
-                                vn: "Refresh_token không hợp lệ hoặc đã hết hạn, vui lòng đăng nhập lại.",
+                                en: "token is invalid or has been expired, please login again.",
+                                vn: "token không hợp lệ hoặc đã hết hạn, vui lòng đăng nhập lại.",
                             },
                         });
+                    } else {
+                        !refreshPayload
+                            ? responseJson({
+                                  res,
+                                  statusCode: 401,
+                                  msg: {
+                                      en: "token is invalid or has been expired, please login again.",
+                                      vn: "token không hợp lệ hoặc đã hết hạn, vui lòng đăng nhập lại.",
+                                  },
+                              })
+                            : undefined;
+                        // console.log(refreshPayload);
+                        const accountQuery = await accountModel.findOne({ userCode: refreshPayload.userCode });
+
+                        if (refreshToken == accountQuery.refresh_token) {
+                            let newToken = jwt.sign(
+                                {
+                                    userCode: accountQuery.userCode,
+                                    fullName: accountQuery.fullName,
+                                    role: accountQuery.role,
+                                    status: accountQuery.status,
+                                },
+                                process.env.ACCESS_TOKEN_SECRET_KEY,
+                                {
+                                    expiresIn: "1m",
+                                }
+                            );
+                            res.cookie("token", newToken);
+                            await accountModel.findOneAndUpdate({ userCode: refreshPayload.userCode }, { access_token: newToken });
+                            return next();
+                        } else {
+                            responseJson({
+                                res,
+                                statusCode: 401,
+                                msg: {
+                                    en: "Refresh token is invalid or has been expired, please login again.",
+                                    vn: "Refresh_token không hợp lệ hoặc đã hết hạn, vui lòng đăng nhập lại.",
+                                },
+                            });
+                        }
                     }
                 });
             } else {
