@@ -69,4 +69,52 @@ module.exports = {
             },
         });
     },
+    updateDishStatus: async (req, res, next) => {
+        const dishId = req.body.dishId || req.params.dishId || req.query.dishId || null;
+        const statusToUpdate = req.body.statusToUpdate || false;
+        const dishQuery = await dishModel.findOne({ dishId });
+        if (!dishId) {
+            return responseJson({
+                res,
+                msg: {
+                    en: "dishId is required.",
+                    vn: "Thất bại.",
+                },
+            });
+        }
+        if (!dishQuery) {
+            return responseJson({
+                res,
+                msg: {
+                    en: "dish cannot be found.",
+                    vn: "Thất bại.",
+                },
+            });
+        }
+
+        // Update dish status from statusToUpdate by dishId
+        await dishModel.updateOne({ dishId }, { status: statusToUpdate }, (err, result) => {
+            if (err) {
+                console.log("🚀 ~ file: dish.js:98 ~ awaitdishModel.updateOne ~ err:", err);
+                return responseJson({
+                    res,
+                    status: false,
+                    statusCode: 500,
+                    msg: {
+                        en: "An error occurred while updating",
+                        vn: "Thất bại.",
+                    },
+                });
+            } else {
+                return responseJson({
+                    res,
+                    status: true,
+                    msg: {
+                        en: "dish status updated successfully.",
+                        vn: "Thành công",
+                    },
+                });
+            }
+        });
+    },
 };
