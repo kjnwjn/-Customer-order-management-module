@@ -14,8 +14,7 @@ const dishSchema = new mongoose.Schema(
         },
         status: {
             type: Boolean,
-            require: true,
-            default: false,
+            default: true,
         },
         price: {
             type: Number,
