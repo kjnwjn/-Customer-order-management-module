@@ -4,8 +4,8 @@ const { generateRandomString } = require("../../utils/index");
 const orderModel = require("../../models/order");
 const accountModel = require("../../models/account");
 const tableModel = require("../../models/table");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const dishModel = require("../../models/dish");
+
 module.exports = {
     newOrder: async (req, res, next) => {
         // #swagger.tags = ['Order']
@@ -78,5 +78,86 @@ module.exports = {
                 msg: { en: error.message },
             });
         }
+    },
+    addToCart: async (req, res, next) => {
+        const orderId = req.params.orderId || req.body.orderId || req.body.orderId || null;
+        const tableId = req.params.tableId || req.query.tableId || req.body.tableId || null;
+        const dishId = req.params.dishId || req.query.dishId || req.body.dishId || null;
+        const quantity = req.params.quantity || req.query.quantity || req.body.quantity || 1;
+        const dishQuery = await dishModel.findOne({ dishId });
+        const tableQuery = await tableModel.findOne({ tableId });
+        const orderQuery = await orderModel.findOne({ orderId });
+        if (!orderQuery) {
+            return responseJson({
+                res,
+                statusCode: 404,
+                msg: {
+                    en: `Order "${orderId}" is invalid.`,
+                    vn: `OrderId không hợp lệ.`,
+                },
+            });
+        }
+        if (!tableQuery) {
+            return responseJson({
+                res,
+                statusCode: 404,
+                msg: {
+                    en: `Table "${tableId}" does not exit! or is using!`,
+                    vn: `Bàn số "${tableId}" không tồn tại hoặc  đang được sử dụ`,
+                },
+            });
+        }
+        if (!tableQuery.status) {
+            return responseJson({
+                res,
+                msg: {
+                    en: `Table "${tableId}" was not initialized.`,
+                    vn: `Thất bại.`,
+                },
+            });
+        }
+        if (!dishQuery) {
+            return responseJson({
+                res,
+                statusCode: 404,
+                msg: {
+                    en: `Dish "${dishId}" does not exit! or is using!`,
+                    vn: `Đơn vị "${dishId}" không tồn tại hoặc  đang được`,
+                },
+            });
+        }
+        if (!dishQuery.status) {
+            return responseJson({
+                res,
+                msg: {
+                    en: `Dish "${dishId}" is not available.`,
+                    vn: `Không có sẵn.`,
+                },
+            });
+        }
+
+        // Add new dish queried to orderData of orderModel and check if dishId is existing then add old quantity with new quantity
+        const orderData = orderQuery.orderData || [];
+        const dishIndex = orderData.findIndex((item) => item.dishId === dishId);
+        if (dishIndex >= 0) {
+            const dish = orderData[dishIndex];
+            dish.quantity += quantity;
+            orderData[dishIndex] = dish;
+        } else {
+            orderData.push({
+                dishId,
+                quantity,
+            });
+        }
+        orderQuery.orderData = orderData;
+        await orderQuery.save();
+        return responseJson({
+            res,
+            statusCode: 200,
+            msg: {
+                en: `Added ${quantity} ${dishQuery.name} to cart.`,
+                vn: `Đã thêm ${quantity} ${dishQuery.name} vào giỏ hàng.`,
+            },
+        });
     },
 };
