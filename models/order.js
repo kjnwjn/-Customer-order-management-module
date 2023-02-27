@@ -11,7 +11,7 @@ const orderSchema = new mongoose.Schema(
         status: {
             type: String,
             require: true,
-            default: "IN_USE",
+            default: "INITIAL",
         },
         totalAmount: {
             type: Number,
@@ -20,6 +20,10 @@ const orderSchema = new mongoose.Schema(
         },
         userCode: {
             type: String,
+            require: true,
+        },
+        tableId: {
+            type: Number,
             require: true,
         },
         orderData: {

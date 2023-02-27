@@ -10,7 +10,7 @@ module.exports = {
     getAccessToken: async function (req, res, next) {
         const token = req.query.token || req.headers["x-access-token"] || req.cookies.token;
 
-        responseJson({
+        return responseJson({
             res,
             status: true,
             statusCode: 200,

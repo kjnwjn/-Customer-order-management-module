@@ -1,15 +1,19 @@
 // const database_uri = "mongodb://127.0.0.1:27017/SOA_Midterm";
 const database_uri = process.env.DB_URL;
 const mongoose = require("mongoose");
+const autoIncrement = require("mongoose-auto-increment");
 const accountModel = require("../models/account");
 const adminConfig = require("./admin");
 
+var connection = mongoose.createConnection(database_uri);
+autoIncrement.initialize(connection);
 const query = { userCode: adminConfig.userCode },
     update = adminConfig,
     options = { upsert: true, new: true, setDefaultsOnInsert: true };
 
 const connect = async function () {
     mongoose.set("strictQuery", false);
+
     mongoose.connect(database_uri, { useNewUrlParser: true, useUnifiedTopology: true }).then(
         () => {
             console.log("✅ Connect to mongoDB successfully!");
@@ -32,4 +36,5 @@ const connect = async function () {
     );
 };
 
-module.exports = connect;
+exports.connect = connect;
+exports.autoIncrement = autoIncrement;

@@ -11,18 +11,18 @@ module.exports = {
         try {
             let userCode = req.body.userCode ? req.body.userCode.toUpperCase() : "";
             let password = req.body.password || null;
-            !userCode
-                ? responseJson({
-                      res,
-                      msg: { en: "userCode is required" },
-                  })
-                : undefined;
-            !password
-                ? responseJson({
-                      res,
-                      msg: { en: "password is required" },
-                  })
-                : undefined;
+            if (!userCode) {
+                return responseJson({
+                    res,
+                    msg: { en: "userCode is required" },
+                });
+            }
+            if (!password) {
+                return responseJson({
+                    res,
+                    msg: { en: "password is required" },
+                });
+            }
             let accountQuery = await accountModel.findOne({ userCode });
             if (accountQuery) {
                 // console.log(accountQuery);
@@ -55,7 +55,7 @@ module.exports = {
                         res.cookie("refreshToken", refreshToken);
                         res.cookie("token", token);
                         await accountModel.findOneAndUpdate({ userCode }, { access_token: token, refresh_token: refreshToken, status: true });
-                        responseJson({
+                        return responseJson({
                             res,
                             status: true,
                             statusCode: 200,
@@ -66,7 +66,7 @@ module.exports = {
                             },
                         });
                     } else {
-                        responseJson({
+                        return responseJson({
                             res,
                             statusCode: 401,
                             msg: { en: "Invalid password!", vn: "Mật khẩu không hợp lệ." },
@@ -74,13 +74,13 @@ module.exports = {
                     }
                 });
             } else {
-                responseJson({
+                return responseJson({
                     res,
                     msg: { en: "Account does not exist!", vn: "Tài khoản không tồn tại." },
                 });
             }
         } catch (error) {
-            responseJson({
+            return responseJson({
                 res,
                 statusCode: 500,
                 msg: { en: error.message },
@@ -92,6 +92,8 @@ module.exports = {
         // #swagger.description = 'This endpoint provides method for logout in system. Then receive an access token.'
         try {
             const token = req.headers["x-access-token"] || req.query.token || req.cookies.token || null;
+            req.cookies.token ? res.clearCookie("token") : undefined;
+            req.cookies.refreshToken ? res.clearCookie("refreshToken") : undefined;
             jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY, async (error, payload) => {
                 await accountModel.findOneAndUpdate({ userCode: payload.userCode }, { access_token: "#N/A", refresh_token: "#N/A", status: false });
                 return responseJson({
@@ -104,7 +106,7 @@ module.exports = {
                 });
             });
         } catch (e) {
-            responseJson({
+            return responseJson({
                 res,
                 statusCode: 500,
                 msg: { en: error.message },
@@ -122,7 +124,7 @@ module.exports = {
         } while (await accountModel.findOne({ userCode }));
 
         if (!fullName) {
-            responseJson({
+            return responseJson({
                 res,
                 msg: {
                     en: "fullName is require.",
@@ -130,11 +132,9 @@ module.exports = {
                 },
             });
         }
-        console.log(roleConfigs);
         const correctRoles = Object.values(roleConfigs);
-        console.log(correctRoles);
         if (!role) {
-            responseJson({
+            return responseJson({
                 res,
                 msg: {
                     en: "role is require.",
@@ -142,43 +142,61 @@ module.exports = {
                 },
             });
         }
-        const a = correctRoles.filter((correctRole) => {
+        const checkRole = correctRoles.filter((correctRole) => {
             return correctRole == role;
         });
-        console.log(a);
-        res.end();
-        // const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
-        // const newAccount = new accountModel({ userCode, password: hashPassword, fullName, role });
-        // await newAccount.save();
-        // responseJson({
-        //     res,
-        //     status: true,
-        //     msg: {
-        //         en: `Create an account for user "${fullName}" successfully!`,
-        //         vn: `Đã tạo tài khoản nhân viên thành công cho "${fullName}".`,
-        //     },
-        // });
+        if (checkRole.length > 0) {
+            const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+            const newAccount = new accountModel({ userCode, password: hashPassword, fullName, role });
+            await newAccount.save();
+            return responseJson({
+                res,
+                status: true,
+                msg: {
+                    en: `Create an account for user "${fullName}" successfully!`,
+                    vn: `Đã tạo tài khoản nhân viên thành công cho "${fullName}".`,
+                },
+            });
+        } else {
+            return responseJson({
+                res,
+                msg: {
+                    en: `Role invalid!`,
+                    vn: `Chức vụ nhân viên không hợp lệ!".`,
+                },
+            });
+        }
     },
-    getAllUsers: async (req, res, next) => {
+    getAllAccount: async (req, res, next) => {
         // #swagger.tags = ['Account']
-        // #swagger.description = 'This endpoint provides method for logout in system. Then receive an access token.'
         try {
             let users = await accountModel.find({});
-            users
-                ? responseJson({
-                      res,
-                      status: true,
-                      msg: { en: "Get list user successfully!", vn: "Lấy danh sách tài khoản thành công!" },
-                      data: {
-                          users,
-                      },
-                  })
-                : responseJson({
-                      res,
-                      msg: { en: "List user is empty!", vn: "Danh sách tài khoản rỗng!" },
-                  });
+            if (users.length < 0) {
+                return responseJson({
+                    res,
+                    msg: { en: "List user is empty!", vn: "Danh sách tài khoản rỗng!" },
+                });
+            }
+            let listUsers = users.map((user) => {
+                return {
+                    userCode: user.userCode,
+                    fullName: user.fullName,
+                    status: user.status,
+                    role: user.role,
+                    createdAt: user.createdAt,
+                    updatedAt: user.updatedAt,
+                };
+            });
+            return responseJson({
+                res,
+                status: true,
+                msg: { en: "Get list user successfully!", vn: "Lấy danh sách tài khoản thành công!" },
+                data: {
+                    listUsers,
+                },
+            });
         } catch (error) {
-            responseJson({
+            return responseJson({
                 res,
                 statusCode: 500,
                 msg: { en: error.message },

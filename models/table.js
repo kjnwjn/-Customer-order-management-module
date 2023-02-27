@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const mongooseDelete = require("mongoose-delete");
+const { autoIncrement } = require("../configs/db");
 
 const tableSchema = new mongoose.Schema(
     {
@@ -13,11 +14,11 @@ const tableSchema = new mongoose.Schema(
             require: true,
             default: false,
         },
-        guestNumbs: {
-            type: Number,
-            require: true,
-            default: 1,
-        }, // ko can
+        // guestNumbs: {
+        //     type: Number,
+        //     require: true,
+        //     default: 1,
+        // }, // ko can
     },
     {
         timestamps: true,
@@ -27,6 +28,12 @@ const tableSchema = new mongoose.Schema(
 tableSchema.plugin(mongooseDelete, {
     deletedAt: true,
     overrideMethods: "all",
+});
+tableSchema.plugin(autoIncrement.plugin, {
+    model: "Table",
+    field: "tableId",
+    startAt: 1,
+    incrementBy: 1,
 });
 
 module.exports = mongoose.model("Table", tableSchema);

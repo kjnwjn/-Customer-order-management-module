@@ -1,20 +1,25 @@
 const jwt = require("jsonwebtoken");
 const role = require("../configs/role");
+const { isTokenExpired } = require("../utils/index");
 const { responseJson } = require("../utils/response");
-
+const refreshToken = require("./refreshToken");
 const authorization = {
     admin: async (req, res, next) => {
         try {
             const token = req.query.token || req.headers["x-access-token"] || req.cookies.token || null;
-            console.log(token);
+
             jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY, async (error, payload) => {
-                console.log(payload);
-                console.log(error);
+                if (error) {
+                    if (isTokenExpired(token)) {
+                        refreshToken(req, res);
+                        return next();
+                    }
+                }
 
                 if (payload && payload.role.toUpperCase() == role.admin) {
                     return next();
                 } else {
-                    responseJson({
+                    return responseJson({
                         res,
                         statusCode: 401,
                         msg: {
@@ -25,7 +30,7 @@ const authorization = {
                 }
             });
         } catch (error) {
-            responseJson({
+            return responseJson({
                 res,
                 statusCode: 500,
                 msg: {

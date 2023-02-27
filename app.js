@@ -1,5 +1,5 @@
 require("dotenv").config();
-require("./configs/db")();
+var { connect } = require("./configs/db");
 
 var cors = require("cors");
 var path = require("path");
@@ -16,7 +16,7 @@ const endpointsFiles = ["./routes/api.js"];
 const corsOptions = { origin: "*", optionsSuccessStatus: 200 };
 
 var app = express();
-
+connect();
 app.use(cors(corsOptions));
 app.use(logger("dev"));
 app.use(express.json());

@@ -63,7 +63,7 @@
         "responses": {}
       }
     },
-    "/account/newAccount": {
+    "/account/new-account": {
       "post": {
         "tags": [
           "Account"
@@ -99,12 +99,69 @@
         "responses": {}
       }
     },
-    "/account/get-all-users": {
+    "/account/get-all-account": {
       "get": {
         "tags": [
           "Account"
         ],
-        "description": "This endpoint provides method for logout in system. Then receive an access token.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-access-token",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/order/new": {
+      "post": {
+        "tags": [
+          "Order"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-access-token",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userCode": {
+                  "example": "any"
+                },
+                "tableId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/table/new-table": {
+      "post": {
+        "tags": [
+          "Table"
+        ],
+        "description": "",
         "parameters": [
           {
             "name": "x-access-token",

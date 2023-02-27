@@ -19,6 +19,7 @@
         "jsonwebtoken": "^9.0.0",
         "jwt": "^0.2.0",
         "mongoose": "^6.9.2",
+        "mongoose-auto-increment": "^5.0.1",
         "mongoose-delete": "^0.5.4",
         "morgan": "~1.9.1",
         "socket.io": "^4.6.1",
