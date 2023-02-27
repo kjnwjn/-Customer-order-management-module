@@ -221,6 +221,11 @@ module.exports = {
         orderQuery.totalAmount = totalPrice;
         orderQuery.change = change;
         await orderQuery.save();
+
+        // Update the status of the tableQuery to false
+        tableQuery.status = false;
+        await tableQuery.save();
+
         return responseJson({
             res,
             statusCode: 200,
