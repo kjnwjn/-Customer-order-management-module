@@ -1,30 +1,34 @@
 {
     "name": "midterm",
-    "version": "0.0.0",
-    "private": true,
+    "version": "1.0.0",
+    "description": "",
+    "main": "app.js",
     "scripts": {
         "start": "node ./bin/www",
-        "dev": "nodemon ./bin/www"
+        "dev": "nodemon ./bin/www",
+        "test": "echo \"Error: no test specified\" && exit 1"
     },
+    "author": "",
+    "license": "ISC",
+    "homepage": "https://github.com/kjnwjn/-Customer-order-management-module#readme",
     "dependencies": {
         "bcrypt": "^5.1.0",
-        "cookie-parser": "~1.4.4",
+        "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
-        "debug": "~2.6.9",
+        "debug": "^4.3.4",
         "dotenv": "^16.0.3",
-        "express": "~4.16.1",
-        "http-errors": "~1.6.3",
+        "express": "^4.18.2",
+        "http-errors": "^2.0.0",
         "ip": "^1.1.8",
         "jsonwebtoken": "^9.0.0",
-        "jwt": "^0.2.0",
+        "mongoose": "^6.10.0",
+        "mongoose-auto-increment": "^5.0.1",
         "mongoose-delete": "^0.5.4",
-        "morgan": "~1.9.1",
+        "morgan": "^1.10.0",
         "multer": "^1.4.5-lts.1",
-        "socket.io": "^4.6.1",
-        "swagger-ui-express": "^4.6.1"
-    },
-    "devDependencies": {
         "nodemon": "^2.0.20",
-        "swagger-autogen": "^2.23.1"
+        "socket.io": "^4.6.1",
+        "swagger-autogen": "^2.23.1",
+        "swagger-ui-express": "^4.6.2"
     }
 }
