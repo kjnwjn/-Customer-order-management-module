@@ -201,6 +201,13 @@
         ],
         "responses": {}
       }
+    },
+    "/test/upload": {
+      "post": {
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
     }
   }
 }

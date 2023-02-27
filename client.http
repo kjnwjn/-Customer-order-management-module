@@ -1,0 +1,10 @@
+
+POST http://localhost:3300/api/v1/test/upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=MfnBoundry
+
+--MfnBoundry
+Content-Disposition: form-data; name="thumbnail"; filename="test-image.jpeg"
+Content-Type: image/jpeg
+
+< ./test-image.jpeg
+--MfnBoundry--

@@ -6,6 +6,7 @@ const { generateToken, getAccessToken } = require("./modules/test");
 const { newOrder } = require("./modules/order");
 const { newTable } = require("./modules/table");
 const { admin } = require("../middleware/authorization");
+const multerUpload = require("../utils/multer");
 
 /**
  * Account ================================================================
@@ -34,5 +35,9 @@ Router.post("/table/new-table", authentication, admin, newTable);
 
 Router.get("/token/generateToken", generateToken);
 Router.get("/token/getAccessToken", getAccessToken);
+Router.post("/test/upload", multerUpload, (req, res, next) => {
+    console.log("🚀 ~ file: api.js:39 ~ Router.post ~ req:", req.file);
+    res.end("Upload test");
+});
 
 module.exports = Router;
