@@ -147,6 +147,7 @@ module.exports = {
             orderData.push({
                 dishId,
                 quantity,
+                price: dishQuery.price,
             });
         }
         orderQuery.orderData = orderData;
@@ -157,6 +158,75 @@ module.exports = {
             msg: {
                 en: `Added ${quantity} ${dishQuery.name} to cart.`,
                 vn: `Đã thêm ${quantity} ${dishQuery.name} vào giỏ hàng.`,
+            },
+        });
+    },
+    payOrder: async (req, res, next) => {
+        let [change, totalPrice] = 0;
+        const orderId = req.params.orderId || req.body.orderId || req.body.orderId || null;
+        const tableId = req.params.tableId || req.query.tableId || req.body.tableId || null;
+        const money = req.params.money || req.query.money || req.body.money || 0;
+        const orderQuery = await orderModel.findOne({ orderId });
+        const tableQuery = await tableModel.findOne({ tableId });
+        if (!orderQuery) {
+            return responseJson({
+                res,
+                statusCode: 404,
+                msg: {
+                    en: `Order "${orderId}" is invalid.`,
+                    vn: `OrderId không hợp lệ.`,
+                },
+            });
+        }
+        if (!tableQuery) {
+            return responseJson({
+                res,
+                statusCode: 404,
+                msg: {
+                    en: `Table "${tableId}" does not exit! or is using!`,
+                    vn: `Bàn số "${tableId}" không tồn tại hoặc  đang được sử dụng`,
+                },
+            });
+        }
+        if (!tableQuery.status) {
+            return responseJson({
+                res,
+                msg: {
+                    en: `Table "${tableId}" was not initialized.`,
+                    vn: `Thất bại.`,
+                },
+            });
+        }
+
+        // Calculate the total price from the price of each items in orderData and multiply with the quantity
+        const orderData = orderQuery.orderData || [];
+        for (let i = 0; i < orderData.length; i++) {
+            const dish = orderData[i];
+            totalPrice += dish.price * dish.quantity;
+        }
+        if (totalPrice < money) {
+            return responseJson({
+                res,
+                statusCode: 400,
+                msg: {
+                    en: `Not enough money.`,
+                    vn: `Số tiền không đủ.`,
+                },
+            });
+        }
+        change = totalPrice - money;
+
+        // Update the status of orderModel to 'PAID' and update 'totalAmount' from 'totalPrice' and update 'change' from 'change'
+        orderQuery.status = "PAID";
+        orderQuery.totalAmount = totalPrice;
+        orderQuery.change = change;
+        await orderQuery.save();
+        return responseJson({
+            res,
+            statusCode: 200,
+            msg: {
+                en: `Order "${orderId}" paid successfully.`,
+                vn: `Đã được thay đổi thành công.`,
             },
         });
     },

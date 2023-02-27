@@ -26,6 +26,10 @@ const orderSchema = new mongoose.Schema(
             type: Number,
             require: true,
         },
+        change: {
+            type: Number,
+            default: 0,
+        },
         orderData: {
             type: Array,
             require: true,
