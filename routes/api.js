@@ -33,19 +33,20 @@ Router.put("/category/update-category", authentication, admin, updateCategory);
 
 Router.post("/order/new", authentication, admin, newOrder);
 Router.delete("/order/remove-order", authentication, removeOrder);
+Router.put("/order/update-order", authentication, updateOrder);
 
 /**
  * Table ================================================================
  */
 
-Router.post("/table/new-table", authentication, admin, newTable);
+Router.post("/table/new-table", authentication, newTable);
 Router.get("/table/get-all", getAllTable);
 
 /**
  * Dish ================================================================
  */
 Router.post("/dish/new-dish", multerUpload, createNewDish);
-Router.put("/dish/update-dish-status", authentication, admin, updateDishStatus);
+Router.put("/dish/update-dish-status", authentication, updateDishStatus);
 
 /**
  * Test ================================================================

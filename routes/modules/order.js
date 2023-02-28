@@ -42,7 +42,7 @@ module.exports = {
                 return responseJson({
                     res,
                     msg: {
-                        en: `User "${userCode}" does not exit or user is not active.`,
+                        en: `User "${userCode}" does not exist or user is not active.`,
                         vn: `Nhân viên "${userCode}" không tồn tai hoặc chưa đăng nhập vào hệ thống.`,
                     },
                 });
@@ -53,7 +53,7 @@ module.exports = {
                 return responseJson({
                     res,
                     msg: {
-                        en: `Table "${tableId}" does not exit! or is using!`,
+                        en: `Table "${tableId}" does not exist! or is using!`,
                         vn: `Bàn số "${tableId}" không tồn tại hoặc  đang được sử dụng .`,
                     },
                 });
@@ -90,7 +90,7 @@ module.exports = {
                 return responseJson({
                     res,
                     msg: {
-                        en: "orderId does not exit.",
+                        en: "orderId does not exist.",
                         vn: "orderId không tồn tai.",
                     },
                 });
@@ -132,6 +132,28 @@ module.exports = {
                     statusCode: 500,
                     msg: {
                         en: error.message,
+                    },
+                });
+            }
+        } catch (error) {
+            return responseJson({
+                res,
+                statusCode: 500,
+                msg: { en: error.message },
+            });
+        }
+    },
+    updateOrder: async (req, res, next) => {
+        // #swagger.tags = ['Order']
+        try {
+            let orderId = req.body.orderId || null;
+            let queryOrder = await orderModel.findOne({ orderId });
+            if (queryOrder) {
+                return responseJson({
+                    res,
+                    msg: {
+                        en: `order ${orderId} does not exist.`,
+                        vn: `hoá đơn ${orderId} không tòn tại.`,
                     },
                 });
             }

@@ -78,7 +78,7 @@ const authorization = {
             });
         }
     },
-    CommisChef: async (req, res, next) => {
+    commisChef: async (req, res, next) => {
         try {
             const token = req.query.token || req.headers["x-access-token"] || null;
             jwt.verify(token, process.env.SECRET_KEY, async (error, payload) => {
@@ -92,7 +92,7 @@ const authorization = {
                         },
                     });
                 }
-                if (payload && payload.role.toUpperCase() == role.CommisChef) {
+                if (payload && payload.role.toUpperCase() == role.commisChef) {
                     return next();
                 } else {
                     return res.status(401).json({
