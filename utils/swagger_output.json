@@ -120,6 +120,118 @@
         "responses": {}
       }
     },
+    "/account/refresh-token": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/category/new-category": {
+      "post": {
+        "tags": [
+          "Category"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-access-token",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/category/remove-category": {
+      "delete": {
+        "tags": [
+          "Category"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-access-token",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "categoryId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/category/update-category": {
+      "put": {
+        "tags": [
+          "Category"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-access-token",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "categoryId": {
+                  "example": "any"
+                },
+                "name": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
     "/order/new": {
       "post": {
         "tags": [
@@ -156,6 +268,32 @@
         "responses": {}
       }
     },
+    "/order/remove-order": {
+      "delete": {
+        "tags": [
+          "Order"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-access-token",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "orderId",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
     "/table/new-table": {
       "post": {
         "tags": [
@@ -172,6 +310,114 @@
             "name": "token",
             "in": "query",
             "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/table/get-all": {
+      "get": {
+        "tags": [
+          "Table"
+        ],
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/dish/new-dish": {
+      "post": {
+        "tags": [
+          "Dish"
+        ],
+        "description": "",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "name": "thumbnail",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "Some description..."
+          },
+          {
+            "name": "name",
+            "in": "formData",
+            "type": "String",
+            "description": "Some description..."
+          },
+          {
+            "name": "price",
+            "in": "formData",
+            "type": "Number",
+            "description": "Some description..."
+          },
+          {
+            "name": "categoryId",
+            "in": "formData",
+            "type": "String",
+            "description": "Some description..."
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "example": "any"
+                },
+                "price": {
+                  "example": "any"
+                },
+                "categoryId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/dish/update-dish-status": {
+      "put": {
+        "tags": [
+          "Dish"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-access-token",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "dishId",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "dishId": {
+                  "example": "any"
+                },
+                "statusToUpdate": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {}

@@ -28,4 +28,37 @@ module.exports = {
             });
         }
     },
+
+    getAllTable: async (req, res, next) => {
+        // #swagger.tags = ['Table']
+        try {
+            let tables = await tableModel.find({});
+            if (tables.length < 0) {
+                return responseJson({
+                    res,
+                    msg: { en: "List tables is empty!", vn: "Danh sách bàn rỗng!" },
+                });
+            }
+            let listTables = tables.map((table) => {
+                return {
+                    tableId: table.tableId,
+                    status: table.status,
+                };
+            });
+            return responseJson({
+                res,
+                status: true,
+                msg: { en: "Get list tables successfully!", vn: "Lấy danh sách bàn thành công!" },
+                data: {
+                    listTables,
+                },
+            });
+        } catch (error) {
+            return responseJson({
+                res,
+                statusCode: 500,
+                msg: { en: error.message },
+            });
+        }
+    },
 };

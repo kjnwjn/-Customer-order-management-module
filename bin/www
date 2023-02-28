@@ -22,17 +22,17 @@ app.set("port", port);
 
 var server = http.createServer(app);
 
+/**
+ * Create SocketIO server.
+ */
+
 const { Server } = require("socket.io");
 const io = new Server(server, {
     /* options */
 });
-app.set("socketio", io);
 
 io.on("connection", (socket) => {
-    socket.on("updated", (data) => {
-        // console.log(data);
-        socket.broadcast.emit("randomData", data + " " + Math.random());
-    });
+    console.log("🚀 ~ file: www:32 ~ io.on ~ socket:", socket.id);
 });
 /**
  * Listen on provided port, on all network interfaces.
@@ -98,3 +98,5 @@ function onListening() {
     debug("Listening on " + bind);
     console.log(ip.address());
 }
+
+exports.io = io;

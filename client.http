@@ -1,5 +1,5 @@
 
-POST http://localhost:3300/api/v1/test/upload HTTP/1.1
+POST http://localhost:3300/api/v1/dish/new-dish HTTP/1.1
 Content-Type: multipart/form-data; boundary=MfnBoundry
 
 --MfnBoundry

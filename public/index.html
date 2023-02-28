@@ -27,6 +27,11 @@
             socket.on("response", (data) => {
                 document.getElementById("title").innerHTML = data;
             });
+
+            socket.on("update-table-status", (table) => {
+                console.log(table.tableId);
+                console.log(table.status);
+            });
         </script>
     </body>
 </html>

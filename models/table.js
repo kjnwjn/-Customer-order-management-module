@@ -14,11 +14,6 @@ const tableSchema = new mongoose.Schema(
             require: true,
             default: false,
         },
-        // guestNumbs: {
-        //     type: Number,
-        //     require: true,
-        //     default: 1,
-        // }, // ko can
     },
     {
         timestamps: true,

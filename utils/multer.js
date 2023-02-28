@@ -16,7 +16,6 @@ const storageMulter = (req, res, next) => {
         }),
         limits: { fileSize: 5 * 1024 * 1024 },
         fileFilter: (req, file, callback) => {
-            console.log(file);
             const validMimeType = file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg";
             if (validMimeType) {
                 callback(null, true);

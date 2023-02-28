@@ -23,4 +23,4 @@ categorySchema.plugin(mongooseDelete, {
     overrideMethods: "all",
 });
 
-module.exports = mongoose.model("Category", menuSchema);
+module.exports = mongoose.model("Category", categorySchema);

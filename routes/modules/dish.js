@@ -5,10 +5,43 @@ const dishModel = require("../../models/dish");
 
 module.exports = {
     createNewDish: async (req, res, next) => {
+        // #swagger.tags = ['Dish']
+
+        /*
+          #swagger.consumes = ['multipart/form-data']  
+          #swagger.parameters['thumbnail'] = {
+              in: 'formData',
+              type: 'file',
+              required: 'true',
+              description: 'Some description...',
+        } */
+
+        /*
+          #swagger.consumes = ['multipart/form-data']  
+          #swagger.parameters['name'] = {
+              in: 'formData',
+              type: 'String',
+              description: 'Some description...',
+        } */
+        /*
+          #swagger.consumes = ['multipart/form-data']  
+          #swagger.parameters['price'] = {
+              in: 'formData',
+              type: 'Number',
+              description: 'Some description...',
+        } */
+        /*
+          #swagger.consumes = ['multipart/form-data']  
+          #swagger.parameters['categoryId'] = {
+              in: 'formData',
+              type: 'String',
+              description: 'Some description...',
+        } */
+
         let dishId;
         let name = req.body.name ? req.body.name : null;
         let price = req.body.price ? req.body.price : null;
-        let categoryId = req.body.categoryId ? req.body.price : null;
+        let categoryId = req.body.categoryId ? req.body.categoryId : null;
         let thumbnail = req.file ? req.file.filename : null;
         const categoryQuery = await categoryModel.findOne({ categoryId });
         do {
@@ -70,6 +103,7 @@ module.exports = {
         });
     },
     updateDishStatus: async (req, res, next) => {
+        // #swagger.tags = ['Dish']
         const dishId = req.body.dishId || req.params.dishId || req.query.dishId || null;
         const statusToUpdate = req.body.statusToUpdate || false;
         const dishQuery = await dishModel.findOne({ dishId });

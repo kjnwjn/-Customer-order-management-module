@@ -203,4 +203,50 @@ module.exports = {
             });
         }
     },
+    refreshToken: async function (req, res, next) {
+        // #swagger.tags = ['Account']
+        const refreshToken = req.cookies.refreshToken || null;
+        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET_KEY, async (e, refreshPayload) => {
+            if (e) {
+                return responseJson({
+                    res,
+                    statusCode: 401,
+                    msg: {
+                        en: "Refresh token is invalid, please login again.",
+                        vn: "Refresh token không hợp lệ, vui lòng đăng nhập lại.",
+                    },
+                });
+            } else {
+                const accountQuery = await accountModel.findOne({ userCode: refreshPayload.userCode });
+
+                if (refreshToken == accountQuery.refresh_token) {
+                    let newToken = jwt.sign(
+                        {
+                            userCode: accountQuery.userCode,
+                            fullName: accountQuery.fullName,
+                            role: accountQuery.role,
+                            status: accountQuery.status,
+                        },
+                        process.env.ACCESS_TOKEN_SECRET_KEY,
+                        {
+                            expiresIn: "10m",
+                        }
+                    );
+                    await accountModel.findOneAndUpdate({ userCode: refreshPayload.userCode }, { access_token: newToken });
+                    res.cookie("token", newToken);
+                    return responseJson({
+                        res,
+                        status: 200,
+                        msg: {
+                            en: "token updated successfully",
+                            vn: "token đã được thay đổi thành công",
+                        },
+                        data: {
+                            token: newToken,
+                        },
+                    });
+                }
+            }
+        });
+    },
 };
