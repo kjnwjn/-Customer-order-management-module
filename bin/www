@@ -30,9 +30,10 @@ const { Server } = require("socket.io");
 const io = new Server(server, {
     /* options */
 });
+const socketInitiator = require("../services/socket.io");
 
 io.on("connection", (socket) => {
-    console.log("🚀 ~ file: www:32 ~ io.on ~ socket:", socket.id);
+    socketInitiator(socket);
 });
 /**
  * Listen on provided port, on all network interfaces.

@@ -62,7 +62,10 @@ module.exports = {
 
             const openTable = await tableModel.findOneAndUpdate({ tableId }, { status: true });
             if (openTable) {
-                socket.io.emit("update-table-status", { id: tableId, status: true });
+                socket.io.emit("update-table-status", {
+                    tableId,
+                    status: true,
+                });
                 const newOrder = new orderModel({ orderId, userCode, tableId });
                 await newOrder.save();
                 return responseJson({
@@ -168,6 +171,15 @@ module.exports = {
     },
     addToCart: async (req, res, next) => {
         // #swagger.tags = ['Order']
+
+        /**
+         * swagger.description = 'example params : {
+         "orderId": "809842",
+        "messages": "any",
+        "orderData": [{"dishId":123213,"qty": 2},{"dishId":809910,"qty": 2}]
+        }' 
+        */
+
         const orderId = req.body.orderId ? req.body.orderId : null;
         // const dishId = req.query.dishId || req.body.dishId || null;
         // const quantity = req.query.quantity || req.body.quantity || 1;
@@ -196,55 +208,48 @@ module.exports = {
                 },
             });
         }
-        let dishUnavailable = orderData.filter((orderItem) => {
+        if (orderData.length < 0) {
+            return responseJson({
+                res,
+                statusCode: 404,
+                msg: {
+                    en: `Empty order`,
+                    vn: `Không tồn tại món ăn mới nào`,
+                },
+            });
+        }
+        // let dishUnavailable = [];
+        let dishAvailable = [];
+        let dishUnavailable = [];
+        orderData.forEach((orderItem) => {
             dishAll.forEach((dish) => {
-                if (!(dish.id === orderItem.id && dish.status)) {
-                    return true;
+                if (!(Number(dish.dishId) === Number(orderItem.dishId) && dish.status)) {
+                    dishUnavailable.push(orderItem);
+                } else {
+                    dishAvailable.push(orderItem);
                 }
-                return false;
             });
         });
         if (dishUnavailable.length > 0) {
-            console.log(dishUnavailable);
-            console.log(false);
-        } else {
-            console.log(orderData);
-            console.log(true);
+            console.log("thông báo món hết là:", dishUnavailable);
+            // Thông báo cho khách hàng món hét
         }
-        res.end();
 
-        // const isDishAvailable = orderData.filter((orderItem)=>{
-        //     return  dishAll.filter((dish)=>{
-        //         if(dish.id === orderItem.id && dish.status){
-        //             return true;
-        //         }else{
-        //             dishUnavailable.push(dish);
-        //             return false;
-        //         }
-        //         return true;
-        //     })
-        // })
-        // if(dishUnavailable.length > 0){
-        //     // THông báo cho khách hàng món hét
-        // }
-        // if(!isDishAvailable){
-        //     return responseJson({
-        //         res,
-        //         msg: {
-        //             en: `Exists 1 dish not available in order`,
-        //             vn: `Tồn tại 1 món ăn không có sẵn trong đơn hàng, vui lòng kiểm tra lại }`,
-        //         },
-        //     });
-        // }
-        // if (!dishQuery.status) {
-        //     return responseJson({
-        //         res,
-        //         msg: {
-        //             en: `Dish "${dishId}" is not available.`,
-        //             vn: `Không có sẵn.`,
-        //         },
-        //     });
-        // }
+        if (dishAvailable.length > 0) {
+            const orderStorage = orderQuery.orderData || [];
+            const dishIndex = orderStorage.findIndex((item) => item.dishId === dishId);
+            if (dishIndex >= 0) {
+                const dish = orderData[dishIndex];
+                dish.quantity += quantity;
+                orderData[dishIndex] = dish;
+            } else {
+                orderStorage.push({
+                    dishId,
+                    quantity,
+                });
+            }
+            orderQuery.orderData = dishAvailable;
+        }
 
         // // Add new dish queried to orderData of orderModel and check if dishId is existing then add old quantity with new quantity
         // // const orderData = orderQuery.orderData || [];
