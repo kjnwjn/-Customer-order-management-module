@@ -2,6 +2,7 @@ const { responseJson } = require("../../utils/response");
 const { generateRandomString } = require("../../utils/index");
 const categoryModel = require("../../models/category");
 const dishModel = require("../../models/dish");
+const socket = require("../../bin/www");
 
 module.exports = {
     createNewDish: async (req, res, next) => {
@@ -104,51 +105,64 @@ module.exports = {
     },
     updateDishStatus: async (req, res, next) => {
         // #swagger.tags = ['Dish']
-        const dishId = req.body.dishId || req.params.dishId || req.query.dishId || null;
-        const statusToUpdate = req.body.statusToUpdate || false;
-        const dishQuery = await dishModel.findOne({ dishId });
-        if (!dishId) {
-            return responseJson({
-                res,
-                msg: {
-                    en: "dishId is required.",
-                    vn: "Thất bại.",
-                },
-            });
-        }
-        if (!dishQuery) {
-            return responseJson({
-                res,
-                msg: {
-                    en: "dish cannot be found.",
-                    vn: "Thất bại.",
-                },
-            });
-        }
+        try {
+            const dishId = req.query.dishId || null;
+            const dishQuery = await dishModel.findOne({ dishId });
 
-        // Update dish status from statusToUpdate by dishId
-        await dishModel.updateOne({ dishId }, { status: statusToUpdate }, (err, result) => {
-            if (err) {
-                console.log("🚀 ~ file: dish.js:98 ~ awaitdishModel.updateOne ~ err:", err);
+            if (!dishId || typeof dishId !== "string") {
                 return responseJson({
                     res,
-                    status: false,
-                    statusCode: 500,
                     msg: {
-                        en: "An error occurred while updating",
+                        en: "dishId is required.",
                         vn: "Thất bại.",
                     },
                 });
-            } else {
+            }
+
+            if (!dishQuery) {
                 return responseJson({
                     res,
-                    status: true,
                     msg: {
-                        en: "dish status updated successfully.",
-                        vn: "Thành công",
+                        en: "dish cannot be found.",
+                        vn: "Thất bại.",
                     },
                 });
             }
-        });
+
+            // Update dish status from statusToUpdate by dishId
+            await dishModel.updateOne({ dishId }, { status: !dishQuery.status }, (err, result) => {
+                if (err) {
+                    console.log("🚀 ~ file: dish.js:98 ~ awaitdishModel.updateOne ~ err:", err);
+                    return responseJson({
+                        res,
+                        status: false,
+                        statusCode: 500,
+                        msg: {
+                            en: "An error occurred while updating",
+                            vn: "Thất bại.",
+                        },
+                    });
+                } else {
+                    socket.io.emit("update-status-dish", {
+                        dishId,
+                        status: !dishQuery.status,
+                    });
+                    return responseJson({
+                        res,
+                        status: true,
+                        msg: {
+                            en: "dish status updated successfully.",
+                            vn: "Thành công",
+                        },
+                    });
+                }
+            });
+        } catch (error) {
+            return responseJson({
+                res,
+                statusCode: 500,
+                msg: { en: error.message },
+            });
+        }
     },
 };

@@ -38,7 +38,6 @@ module.exports = {
                 });
             }
             const checkUserCode = await accountModel.findOne({ userCode });
-            console.log(checkUserCode && checkUserCode.status);
             if (!(checkUserCode && checkUserCode.status)) {
                 return responseJson({
                     res,
@@ -181,13 +180,12 @@ module.exports = {
         */
 
         const orderId = req.body.orderId ? req.body.orderId : null;
-        // const dishId = req.query.dishId || req.body.dishId || null;
-        // const quantity = req.query.quantity || req.body.quantity || 1;
-        // const dishQuery = await dishModel.findOne({ dishId });
-        const messages = req.body.messages.length > 0 ? req.body.messages : [];
-        const orderData = req.body.orderData.length > 0 ? req.body.orderData : [];
+        const orderData = req.body.orderData ? req.body.orderData : [];
         const orderQuery = await orderModel.findOne({ orderId });
         const dishAll = await dishModel.find({});
+
+        let dishAvailable = [];
+        let dishUnavailable = [];
         if (!orderQuery) {
             return responseJson({
                 res,
@@ -218,62 +216,112 @@ module.exports = {
                 },
             });
         }
-        // let dishUnavailable = [];
-        let dishAvailable = [];
-        let dishUnavailable = [];
         orderData.forEach((orderItem) => {
+            const orderItemKeys = Object.keys(orderItem);
+            const orderItemKeysCheck = ["dishId", "qty", "note"];
+            if (orderItemKeys.length != 3) {
+                return responseJson({
+                    res,
+                    statusCode: 200,
+                    msg: {
+                        en: `ALL fields are required`,
+                        vn: `Thiếu trường dữ liệu`,
+                    },
+                });
+            }
+            orderItemKeys.forEach((key) => {
+                if (!orderItemKeysCheck.includes(key)) {
+                    return responseJson({
+                        res,
+                        statusCode: 200,
+                        msg: {
+                            en: `ALL fields are required`,
+                            vn: `Thiếu trường dữ liệu`,
+                        },
+                    });
+                }
+            });
             dishAll.forEach((dish) => {
-                if (!(Number(dish.dishId) === Number(orderItem.dishId) && dish.status)) {
-                    dishUnavailable.push(orderItem);
-                } else {
+                if (dish.dishId == Number(orderItem["dishId"]) && dish.status) {
                     dishAvailable.push(orderItem);
+                } else if (dish.dishId == Number(orderItem["dishId"]) && !dish.status) {
+                    dishUnavailable.push(orderItem);
                 }
             });
         });
+        if (dishAvailable.length + dishUnavailable.length < orderData.length) {
+            return responseJson({
+                res,
+                statusCode: 200,
+                msg: {
+                    en: `Exiting some field unexpected`,
+                    vn: `Tồn tại một số trường không mong muốn`,
+                },
+            });
+        }
+
+        // res.end();
+
         if (dishUnavailable.length > 0) {
-            console.log("thông báo món hết là:", dishUnavailable);
+            return responseJson({
+                res,
+                statusCode: 200,
+                msg: {
+                    en: `some dishes are out`,
+                    vn: `Một số mặt hàng,món ăn đã ngừng bán tại thời điểm này`,
+                },
+                data: {
+                    dishUnavailable,
+                },
+            });
+            // console.log("thông báo món hết là:", dishUnavailable);
             // Thông báo cho khách hàng món hét
         }
-
+        // res.end();
         if (dishAvailable.length > 0) {
             const orderStorage = orderQuery.orderData || [];
-            const dishIndex = orderStorage.findIndex((item) => item.dishId === dishId);
-            if (dishIndex >= 0) {
-                const dish = orderData[dishIndex];
-                dish.quantity += quantity;
-                orderData[dishIndex] = dish;
-            } else {
-                orderStorage.push({
-                    dishId,
-                    quantity,
-                });
-            }
-            orderQuery.orderData = dishAvailable;
-        }
+            dishAvailable.forEach((dishAval) => {
+                const dishIndex = orderStorage.findIndex((item) => item.dishId === dishAval.dishId);
+                if (dishIndex >= 0) {
+                    const dish = orderStorage[dishIndex];
+                    dish.qty += dishAval.qty;
+                    orderStorage[dishIndex] = dish;
+                } else {
+                    orderStorage.push({
+                        dishId: dishAval.dishId,
+                        qty: dishAval.qty,
+                        note: dishAval.note || "",
+                    });
+                }
+            });
 
-        // // Add new dish queried to orderData of orderModel and check if dishId is existing then add old quantity with new quantity
-        // // const orderData = orderQuery.orderData || [];
-        // const dishIndex = orderData.findIndex((item) => item.dishId === dishId);
-        // if (dishIndex >= 0) {
-        //     const dish = orderData[dishIndex];
-        //     dish.quantity += quantity;
-        //     orderData[dishIndex] = dish;
-        // } else {
-        //     orderData.push({
-        //         dishId,
-        //         quantity,
-        //     });
-        // }
-        // orderQuery.orderData = orderData;
-        // await orderQuery.save();
-        // return responseJson({
-        //     res,
-        //     statusCode: 200,
-        //     msg: {
-        //         en: `Added ${quantity} ${dishQuery.name} to cart.`,
-        //         vn: `Đã thêm ${quantity} ${dishQuery.name} vào giỏ hàng.`,
-        //     },
-        // });
+            orderQuery.orderData = orderStorage;
+            await orderQuery.save();
+            socket.io.emit("update-order-data", {
+                orderId,
+                dishes: dishAvailable,
+            });
+            return responseJson({
+                res,
+                statusCode: 200,
+                msg: {
+                    en: `Order updated successfully`,
+                    vn: `Đơn hàng của bạn đang được chuẩn bị`,
+                },
+                data: {
+                    dishAvailable,
+                },
+            });
+        } else {
+            return responseJson({
+                res,
+                statusCode: 200,
+                msg: {
+                    en: `Empty order`,
+                    vn: `Vui lòng thêm món vào giỏ hàng`,
+                },
+            });
+        }
     },
     payOrder: async (req, res, next) => {
         let [change, totalPrice] = 0;
@@ -316,7 +364,7 @@ module.exports = {
         const orderData = orderQuery.orderData || [];
         for (let i = 0; i < orderData.length; i++) {
             const dish = orderData[i];
-            totalPrice += dish.price * dish.quantity;
+            totalPrice += dish.price * dish.qty;
         }
         if (totalPrice < money) {
             return responseJson({

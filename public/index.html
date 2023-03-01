@@ -32,6 +32,10 @@
                 console.log(table.tableId);
                 console.log(table.status);
             });
+
+            socket.on("update-order-data", (data) => {
+                console.log(data);
+            });
         </script>
     </body>
 </html>

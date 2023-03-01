@@ -320,9 +320,6 @@
                 "orderId": {
                   "example": "any"
                 },
-                "messages": {
-                  "example": "any"
-                },
                 "orderData": {
                   "example": "any"
                 }
@@ -442,21 +439,6 @@
             "name": "dishId",
             "in": "query",
             "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "dishId": {
-                  "example": "any"
-                },
-                "statusToUpdate": {
-                  "example": "any"
-                }
-              }
-            }
           }
         ],
         "responses": {}

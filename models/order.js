@@ -35,10 +35,6 @@ const orderSchema = new mongoose.Schema(
             require: true,
             default: [],
         },
-        messages: {
-            type: Array,
-            default: [],
-        },
     },
     {
         timestamps: true,
