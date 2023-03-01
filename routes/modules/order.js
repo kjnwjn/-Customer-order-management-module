@@ -3,6 +3,7 @@ const roleConfigs = require("../../configs/role");
 const { generateRandomString } = require("../../utils/index");
 const orderModel = require("../../models/order");
 const accountModel = require("../../models/account");
+const dishModel = require("../../models/dish");
 const tableModel = require("../../models/table");
 const socket = require("../../bin/www");
 const bcrypt = require("bcrypt");
@@ -166,13 +167,15 @@ module.exports = {
         }
     },
     addToCart: async (req, res, next) => {
-        const orderId = req.params.orderId || req.body.orderId || req.body.orderId || null;
-        const tableId = req.params.tableId || req.query.tableId || req.body.tableId || null;
-        const dishId = req.params.dishId || req.query.dishId || req.body.dishId || null;
-        const quantity = req.params.quantity || req.query.quantity || req.body.quantity || 1;
-        const dishQuery = await dishModel.findOne({ dishId });
-        const tableQuery = await tableModel.findOne({ tableId });
+        // #swagger.tags = ['Order']
+        const orderId = req.body.orderId ? req.body.orderId : null;
+        // const dishId = req.query.dishId || req.body.dishId || null;
+        // const quantity = req.query.quantity || req.body.quantity || 1;
+        // const dishQuery = await dishModel.findOne({ dishId });
+        const messages = req.body.messages.length > 0 ? req.body.messages : [];
+        const orderData = req.body.orderData.length > 0 ? req.body.orderData : [];
         const orderQuery = await orderModel.findOne({ orderId });
+        const dishAll = await dishModel.find({});
         if (!orderQuery) {
             return responseJson({
                 res,
@@ -183,74 +186,95 @@ module.exports = {
                 },
             });
         }
-        if (!tableQuery) {
+        if (dishAll.length <= 0) {
             return responseJson({
                 res,
                 statusCode: 404,
                 msg: {
-                    en: `Table "${tableId}" does not exit! or is using!`,
-                    vn: `Bàn số "${tableId}" không tồn tại hoặc  đang được sử dụ`,
+                    en: `Does not exist any dish`,
+                    vn: `Không tồn tại món ăn nào`,
                 },
             });
         }
-        if (!tableQuery.status) {
-            return responseJson({
-                res,
-                msg: {
-                    en: `Table "${tableId}" was not initialized.`,
-                    vn: `Thất bại.`,
-                },
+        let dishUnavailable = orderData.filter((orderItem) => {
+            dishAll.forEach((dish) => {
+                if (!(dish.id === orderItem.id && dish.status)) {
+                    return true;
+                }
+                return false;
             });
-        }
-        if (!dishQuery) {
-            return responseJson({
-                res,
-                statusCode: 404,
-                msg: {
-                    en: `Dish "${dishId}" does not exit! or is using!`,
-                    vn: `Đơn vị "${dishId}" không tồn tại hoặc  đang được`,
-                },
-            });
-        }
-        if (!dishQuery.status) {
-            return responseJson({
-                res,
-                msg: {
-                    en: `Dish "${dishId}" is not available.`,
-                    vn: `Không có sẵn.`,
-                },
-            });
-        }
-
-        // Add new dish queried to orderData of orderModel and check if dishId is existing then add old quantity with new quantity
-        const orderData = orderQuery.orderData || [];
-        const dishIndex = orderData.findIndex((item) => item.dishId === dishId);
-        if (dishIndex >= 0) {
-            const dish = orderData[dishIndex];
-            dish.quantity += quantity;
-            orderData[dishIndex] = dish;
-        } else {
-            orderData.push({
-                dishId,
-                quantity,
-            });
-        }
-        orderQuery.orderData = orderData;
-        await orderQuery.save();
-        return responseJson({
-            res,
-            statusCode: 200,
-            msg: {
-                en: `Added ${quantity} ${dishQuery.name} to cart.`,
-                vn: `Đã thêm ${quantity} ${dishQuery.name} vào giỏ hàng.`,
-            },
         });
+        if (dishUnavailable.length > 0) {
+            console.log(dishUnavailable);
+            console.log(false);
+        } else {
+            console.log(orderData);
+            console.log(true);
+        }
+        res.end();
+
+        // const isDishAvailable = orderData.filter((orderItem)=>{
+        //     return  dishAll.filter((dish)=>{
+        //         if(dish.id === orderItem.id && dish.status){
+        //             return true;
+        //         }else{
+        //             dishUnavailable.push(dish);
+        //             return false;
+        //         }
+        //         return true;
+        //     })
+        // })
+        // if(dishUnavailable.length > 0){
+        //     // THông báo cho khách hàng món hét
+        // }
+        // if(!isDishAvailable){
+        //     return responseJson({
+        //         res,
+        //         msg: {
+        //             en: `Exists 1 dish not available in order`,
+        //             vn: `Tồn tại 1 món ăn không có sẵn trong đơn hàng, vui lòng kiểm tra lại }`,
+        //         },
+        //     });
+        // }
+        // if (!dishQuery.status) {
+        //     return responseJson({
+        //         res,
+        //         msg: {
+        //             en: `Dish "${dishId}" is not available.`,
+        //             vn: `Không có sẵn.`,
+        //         },
+        //     });
+        // }
+
+        // // Add new dish queried to orderData of orderModel and check if dishId is existing then add old quantity with new quantity
+        // // const orderData = orderQuery.orderData || [];
+        // const dishIndex = orderData.findIndex((item) => item.dishId === dishId);
+        // if (dishIndex >= 0) {
+        //     const dish = orderData[dishIndex];
+        //     dish.quantity += quantity;
+        //     orderData[dishIndex] = dish;
+        // } else {
+        //     orderData.push({
+        //         dishId,
+        //         quantity,
+        //     });
+        // }
+        // orderQuery.orderData = orderData;
+        // await orderQuery.save();
+        // return responseJson({
+        //     res,
+        //     statusCode: 200,
+        //     msg: {
+        //         en: `Added ${quantity} ${dishQuery.name} to cart.`,
+        //         vn: `Đã thêm ${quantity} ${dishQuery.name} vào giỏ hàng.`,
+        //     },
+        // });
     },
     payOrder: async (req, res, next) => {
         let [change, totalPrice] = 0;
-        const orderId = req.params.orderId || req.body.orderId || req.body.orderId || null;
-        const tableId = req.params.tableId || req.query.tableId || req.body.tableId || null;
-        const money = req.params.money || req.query.money || req.body.money || 0;
+        const orderId = req.body.orderId || req.body.orderId || null;
+        const tableId = req.query.tableId || req.body.tableId || null;
+        const money = req.query.money || req.body.money || 0;
         const orderQuery = await orderModel.findOne({ orderId });
         const tableQuery = await tableModel.findOne({ tableId });
         if (!orderQuery) {
@@ -268,7 +292,7 @@ module.exports = {
                 res,
                 statusCode: 404,
                 msg: {
-                    en: `Table "${tableId}" does not exit! or is using!`,
+                    en: `Table "${tableId}" does not exit or is using!`,
                     vn: `Bàn số "${tableId}" không tồn tại hoặc  đang được sử dụng`,
                 },
             });
