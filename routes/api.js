@@ -3,7 +3,7 @@ const authentication = require("../middleware/authentication");
 
 const { login, logout, newAccount, getAllAccount, refreshToken } = require("./modules/account");
 const { generateToken, getAccessToken } = require("./modules/test");
-const { newOrder, removeOrder, addToCart } = require("./modules/order");
+const { newOrder, removeOrder, addToCart, payOrder } = require("./modules/order");
 const { newTable, getAllTable } = require("./modules/table");
 const { newCategory, removeCategory, updateCategory } = require("./modules/category");
 const { createNewDish, updateDishStatus } = require("./modules/dish");
@@ -34,6 +34,7 @@ Router.put("/category/update-category", authentication, admin, updateCategory);
 Router.post("/order/new", authentication, admin, newOrder);
 Router.delete("/order/remove-order", authentication, removeOrder);
 Router.put("/order/update-order", authentication, addToCart);
+Router.post("/order/payment/:orderId", authentication, payOrder);
 
 /**
  * Table ================================================================

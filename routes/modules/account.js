@@ -229,7 +229,7 @@ module.exports = {
                         },
                         process.env.ACCESS_TOKEN_SECRET_KEY,
                         {
-                            expiresIn: "10m",
+                            expiresIn: "1h",
                         }
                     );
                     await accountModel.findOneAndUpdate({ userCode: refreshPayload.userCode }, { access_token: newToken });
